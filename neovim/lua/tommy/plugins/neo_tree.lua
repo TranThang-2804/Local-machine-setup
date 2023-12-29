@@ -33,17 +33,6 @@ return {
       desc = "Buffer explorer",
     },
   },
-  deactivate = function()
-    vim.cmd([[Neotree close]])
-  end,
-  -- init = function()
-  --   if vim.fn.argc(-1) == 1 then
-  --     local stat = vim.loop.fs_stat(vim.fn.argv(0))
-  --     if stat and stat.type == "directory" then
-  --       require("neo-tree.command").execute({ reveal = false, toggle = true, dir = vim.loop.cwd(), position = "float" })
-  --     end
-  --   end
-  -- end,
   opts = {
     close_if_last_window = true, -- Close Neo-tree if it is the last window float in the tab
     popup_border_style = "rounded",
@@ -70,44 +59,6 @@ return {
           "thumbs.db",
         },
       },
-      commands = {
-        -- over write default 'delete' command to 'trash'.
-        delete = function(state)
-          local inputs = require("neo-tree.ui.inputs")
-          local path = state.tree:get_node().path
-          local msg = "Are you sure you want to trash " .. path
-          inputs.confirm(msg, function(confirmed)
-            if not confirmed then return end
-
-            vim.fn.system { "trash", vim.fn.fnameescape(path) }
-            require("neo-tree.sources.manager").refresh(state.name)
-          end)
-        end,
-
-        -- over write default 'delete_visual' command to 'trash' x n.
-        delete_visual = function(state, selected_nodes)
-          local inputs = require("neo-tree.ui.inputs")
-
-          -- get table items count
-          function GetTableLen(tbl)
-            local len = 0
-            for n in pairs(tbl) do
-              len = len + 1
-            end
-            return len
-          end
-
-          local count = GetTableLen(selected_nodes)
-          local msg = "Are you sure you want to trash " .. count .. " files ?"
-          inputs.confirm(msg, function(confirmed)
-            if not confirmed then return end
-            for _, node in ipairs(selected_nodes) do
-              vim.fn.system { "trash", vim.fn.fnameescape(node.path) }
-            end
-            require("neo-tree.sources.manager").refresh(state.name)
-          end)
-        end,
-      },
     },
     default_component_configs = {
       symlink_target = {
@@ -121,15 +72,4 @@ return {
       },
     },
   },
-  config = function(_, opts)
-    require("neo-tree").setup(opts)
-    vim.api.nvim_create_autocmd("TermClose", {
-      pattern = "*lazygit",
-      callback = function()
-        if package.loaded["neo-tree.sources.git_status"] then
-          require("neo-tree.sources.git_status").refresh()
-        end
-      end,
-    })
-  end,
 }
